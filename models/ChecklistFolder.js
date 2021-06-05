@@ -14,15 +14,24 @@ const checklistFolderSchema = new mongoose.Schema(
     },
     checklists: [
       {
-        checklist: {
+        checklistName: {
           type: String,
-          minlength: 10,
+          minlength: 5,
           required: true,
         },
-        checked: {
-          type: Boolean,
-          default: false,
-        },
+        checklistItems: [
+          {
+            item: {
+              type: String,
+              minlength: 10,
+              required: true,
+            },
+            checked: {
+              type: Boolean,
+              default: false,
+            },
+          },
+        ],
       },
     ],
   },

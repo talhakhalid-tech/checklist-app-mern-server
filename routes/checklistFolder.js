@@ -42,9 +42,35 @@ router.post("/create", async (req, res) => {
 
     await folder.save();
 
-    res.status(201).json({ message: "Folder Created Successfully" });
+    res.status(201).json({ folder, message: "Folder Created Successfully" });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ error: "Oops, Server Error" });
+  }
+});
+
+router.post("/createChecklist", async (req, res) => {
+  try {
+    const { name, folderId } = req.body;
+    const folder = await ChecklistFolder.findOne({ _id: folderId });
+    folder.checklists.push({ checklistName: name });
+    await folder.save();
+    res.status(201).json({ folder, message: "Checklist Created Successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Oops, Server Error" });
+  }
+});
+
+router.delete("/deleteChecklist", async (req, res) => {
+  try {
+    const folder = await ChecklistFolder.findOne({ _id: req.query.folderId });
+    const checklistIndex = folder.checklists.findIndex(
+      (checklist) => checklist._id.toString() === req.query.checklistId
+    );
+    folder.checklists.splice(checklistIndex, 1);
+    await folder.save();
+    res.status(202).json({ folder, message: "Checklist Deleted Successfully" });
+  } catch (error) {
     res.status(500).json({ error: "Oops, Server Error" });
   }
 });
