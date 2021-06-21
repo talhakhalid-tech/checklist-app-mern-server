@@ -75,4 +75,98 @@ router.delete("/deleteChecklist", async (req, res) => {
   }
 });
 
+router.get("/getChecklist", async (req, res) => {
+  try {
+    const { folderId, checklistId } = req.query;
+    const folder = await ChecklistFolder.findOne({ _id: folderId });
+    const checklistIndex = folder.checklists.findIndex(
+      (checklist) => checklist._id.toString() === checklistId
+    );
+    res.status(200).json({ checklist: folder.checklists[checklistIndex] });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Oops, Server Error" });
+  }
+});
+
+router.post("/saveChecklist", async (req, res) => {
+  try {
+    const { folderId, checklistId, checklist } = req.body;
+    const folder = await ChecklistFolder.findOne({ _id: folderId });
+    const checklistIndex = folder.checklists.findIndex(
+      (checklist) => checklist._id.toString() === checklistId
+    );
+    folder.checklists[checklistIndex].checklistItems = checklist;
+    await folder.save();
+    res.status(202).json({ message: "Checklist Saved Successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Oops, Server Error" });
+  }
+});
+
+router.post("/addChecklistItem", async (req, res) => {
+  try {
+    const { folderId, checklistId, item } = req.body;
+    const folder = await ChecklistFolder.findOne({ _id: folderId });
+    const checklistIndex = folder.checklists.findIndex(
+      (checklist) => checklist._id.toString() === checklistId
+    );
+    folder.checklists[checklistIndex].checklistItems.push(item);
+    await folder.save();
+    res
+      .status(202)
+      .json({ folder, message: "Checklist Item Added Successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Oops, Server Error" });
+  }
+});
+
+router.patch("/updateChecklistItem", async (req, res) => {
+  try {
+    const { folderId, checklistId, item } = req.body;
+    const folder = await ChecklistFolder.findOne({ _id: folderId });
+    const checklistIndex = folder.checklists.findIndex(
+      (checklist) => checklist._id.toString() === checklistId
+    );
+    folder.checklists[checklistIndex].checklistItems.forEach(
+      (checklistItem, index) => {
+        if (checklistItem._id.toString() === item._id) {
+          folder.checklists[checklistIndex].checklistItems[index] = item;
+        }
+      }
+    );
+    await folder.save();
+    res
+      .status(202)
+      .json({ folder, message: "Checklist Item Updated Successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Oops, Server Error" });
+  }
+});
+
+router.delete("/deleteChecklistItem", async (req, res) => {
+  try {
+    const { folderId, checklistId, itemId } = req.query;
+    const folder = await ChecklistFolder.findOne({ _id: folderId });
+    const checklistIndex = folder.checklists.findIndex(
+      (checklist) => checklist._id.toString() === checklistId
+    );
+    folder.checklists[checklistIndex].checklistItems.forEach(
+      (checklistItem, index) => {
+        if (checklistItem._id.toString() === itemId) {
+          folder.checklists[checklistIndex].checklistItems.splice(index, 1);
+        }
+      }
+    );
+    await folder.save();
+    res
+      .status(202)
+      .json({ folder, message: "Checklist Item Deleted Successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Oops, Server Error" });
+  }
+});
+
 module.exports = router;
